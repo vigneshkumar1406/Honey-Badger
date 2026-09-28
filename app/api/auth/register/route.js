@@ -1,0 +1,4 @@
+import { NextResponse } from "next/server";
+import { signUp, authCookieOptions } from "@/lib/supabase/rest";
+export async function POST(req){
+ try{const {name,email,password}=await req.json(); if(!name||!email||!password) throw new Error("Name, email and password are required."); if(password.length<6) throw new Error("Password must be at least 6 characters."); const data=await signUp(email,password,name); const res=NextResponse.json({ok:true,needsEmailConfirmation:!data.access_token}); if(data.access_token){res.cookies.set("hb_access_token",data.access_token,authCookieOptions(data.expires_in||3600)); res.cookies.set("hb_refresh_token",data.refresh_token,authCookieOptions(60*60*24*30));} return res;}catch(e){return NextResponse.json({ok:false,error:e.message||"Registration failed."},{status:400});}}

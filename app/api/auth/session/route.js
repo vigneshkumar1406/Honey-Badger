@@ -1,0 +1,2 @@
+import { NextResponse } from 'next/server';
+export async function POST(req){const b=await req.json();if(!b.access_token||!b.refresh_token)return NextResponse.json({ok:false},{status:400});const secure=process.env.NODE_ENV==='production';const res=NextResponse.json({ok:true});res.cookies.set('hb_access_token',b.access_token,{httpOnly:true,secure,sameSite:'lax',path:'/',maxAge:Number(b.expires_in||3600)});res.cookies.set('hb_refresh_token',b.refresh_token,{httpOnly:true,secure,sameSite:'lax',path:'/',maxAge:60*60*24*30});return res;}

@@ -1,0 +1,17 @@
+import Link from "next/link";
+import { redirect } from "next/navigation";
+import ProductForm from "./ProductForm";
+import { requireAdmin } from "@/lib/supabase/rest";
+import { getAllProducts, getCategories, totalStock } from "@/lib/server/catalog";
+import AdminShell from "@/components/hb/AdminShell";
+export const dynamic='force-dynamic';
+export default async function AdminProductsPage({searchParams}){
+  const admin=await requireAdmin().catch(e=>{if(e.code==='AUTH_REQUIRED')redirect('/login');redirect('/account')});
+  const products=await getAllProducts({includeHidden:true}); const categories=await getCategories();
+  const edit=searchParams?.id?products.find(p=>p.id===searchParams.id):null; const formOpen=Boolean(edit||searchParams?.new);
+  return <AdminShell title="Products">
+    {!formOpen && <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6"><div><div className="text-xs font-bold text-neutral-400 uppercase tracking-widest">Catalogue</div><h2 className="text-2xl font-black mt-1">Product management</h2><p className="text-sm text-neutral-500 mt-1">{products.length} products · live inventory</p></div><Link href="/admin/products?new=1" className="inline-flex items-center justify-center bg-orange-500 hover:bg-orange-400 text-black px-5 py-3.5 rounded-lg font-black text-sm">+ ADD NEW PRODUCT</Link></div>}
+    {formOpen && <section className="bg-white border border-neutral-200 rounded-xl overflow-hidden mb-8"><div className="p-5 border-b flex items-center justify-between"><div><div className="text-xs font-bold text-orange-600 uppercase tracking-widest">{edit?'Edit catalogue item':'Product creation'}</div><h2 className="font-display text-2xl tracking-wider mt-1">{edit?'EDIT PRODUCT':'ADD NEW PRODUCT'}</h2></div><Link href="/admin/products" className="text-xs font-bold border px-4 py-2">CANCEL</Link></div><div className="p-5 md:p-7"><ProductForm categories={categories} product={edit}/></div></section>}
+    <section className="bg-white border border-neutral-200 rounded-xl overflow-hidden"><div className="p-5 border-b flex items-center justify-between"><div><h2 className="font-bold">All products</h2><p className="text-xs text-neutral-400 mt-1">Search, edit and monitor stock</p></div>{formOpen&&<Link href="/admin/products?new=1" className="text-xs font-bold text-orange-600">+ NEW</Link>}</div><div className="overflow-x-auto"><table className="w-full text-sm min-w-[900px]"><thead className="bg-neutral-50 text-[10px] uppercase tracking-widest text-neutral-400"><tr className="text-left"><th className="p-4">Product</th><th className="p-4">SKU</th><th className="p-4">Category</th><th className="p-4">Price</th><th className="p-4">Stock</th><th className="p-4">Status</th><th className="p-4"></th></tr></thead><tbody>{products.map(p=><tr key={p.id} className="border-t hover:bg-neutral-50"><td className="p-4 font-semibold">{p.name}</td><td className="p-4 text-neutral-500">{p.sku}</td><td className="p-4">{p.category}</td><td className="p-4 font-bold">₹{Number(p.price).toLocaleString('en-IN')}</td><td className="p-4"><span className={totalStock(p)<=20?'text-orange-600 font-bold':''}>{totalStock(p)}</span></td><td className="p-4"><span className="text-[10px] font-bold uppercase bg-neutral-100 rounded px-2 py-1">{p.status}</span></td><td className="p-4"><Link href={`/admin/products?id=${p.id}`} className="font-bold underline">EDIT</Link></td></tr>)}</tbody></table></div></section>
+  </AdminShell>
+}
