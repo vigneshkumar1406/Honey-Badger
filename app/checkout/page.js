@@ -151,14 +151,23 @@ export default function CheckoutPage() {
           const poll = async () => {
             if (paymentFinalizing.current || pollCount++ >= 200) return;
             try {
-              const statusRes = await fetch(`/api/razorpay/status?orderId=${encodeURIComponent(data.razorpay.orderId)}`, { cache: "no-store" });
+              const statusRes = await fetch("/api/razorpay/status", {
+                method: "POST",
+                headers: {"Content-Type":"application/json"},
+                cache: "no-store",
+                body: JSON.stringify({
+                  orderId: data.razorpay.orderId,
+                  items:items.map((i)=>({productId:i.productId,color:i.color,size:i.size,quantity:i.quantity})),
+                  customer,
+                  address
+                })
+              });
               const status = await statusRes.json();
-              if (status.ok && status.status === "paid" && status.paymentId) {
-                await finalizePayment({
-                  razorpay_order_id: data.razorpay.orderId,
-                  razorpay_payment_id: status.paymentId,
-                  razorpay_signature: ""
-                });
+              if (status.ok && status.status === "paid" && status.orderNumber) {
+                paymentFinalizing.current = true;
+                rzp.close();
+                clearCart();
+                router.push(`/order-success/${status.orderNumber}`);
                 return;
               }
             } catch {}
