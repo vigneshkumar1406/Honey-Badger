@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import crypto from "crypto";
 
 async function razorpayGet(path) {
   const auth = Buffer.from(`${process.env.RAZORPAY_KEY_ID}:${process.env.RAZORPAY_KEY_SECRET}`).toString("base64");
@@ -28,7 +29,8 @@ export async function GET(req) {
       : null;
 
     if (!payment) return NextResponse.json({ ok:true, status:"pending" });
-    return NextResponse.json({ ok:true, status:"paid", paymentId:payment.id });
+    const signature = crypto.createHmac("sha256", process.env.RAZORPAY_KEY_SECRET).update(`${orderId}|${payment.id}`).digest("hex");
+    return NextResponse.json({ ok:true, status:"paid", paymentId:payment.id, signature });
   } catch (err) {
     console.error("[razorpay/status]", err);
     return NextResponse.json({ ok:false, error:err.message || "Unable to check payment." }, { status:502 });
