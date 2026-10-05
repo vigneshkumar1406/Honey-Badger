@@ -1,8 +1,15 @@
 import { NextResponse } from "next/server";
+import { randomBytes } from "crypto";
 import { requireAdmin, supabaseRequest } from "@/lib/supabase/rest";
+
+function newId() {
+  // Matches the compact 26-character hex IDs used by the existing commerce rows.
+  return randomBytes(13).toString("hex");
+}
 
 function productPayload(b) {
   return {
+    id: newId(),
     name: b.name,
     slug: b.slug,
     category_id: b.categoryId || null,
@@ -41,6 +48,7 @@ export async function POST(req) {
         accessToken,
         headers: { Prefer: "return=minimal" },
         body: {
+          id: newId(),
           product_id: p.id,
           color: v.color,
           size: v.size,
@@ -61,6 +69,7 @@ export async function POST(req) {
         accessToken,
         headers: { Prefer: "return=minimal" },
         body: {
+          id: newId(),
           product_id: p.id,
           image_url: b.images[i],
           alt_text: b.name,
