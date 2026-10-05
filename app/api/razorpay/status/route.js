@@ -42,7 +42,7 @@ export async function POST(req) {
       method:"POST",
       body:{
         p_items:body.items,
-        p_customer:body.customer,
+        p_customer:{ ...body.customer, phone: body.address?.phone },
         p_address:body.address,
         p_payment_id:payment.id
       }
