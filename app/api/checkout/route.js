@@ -38,7 +38,7 @@ export async function POST(req) {
     // must not turn an otherwise valid guest/COD checkout into a 400/401.
     const accessToken = await getAccessToken();
     const authUser = accessToken ? await getAuthUser(accessToken) : null;
-    const result = await createCodOrder({ items, customer, address, accessToken: authUser?.id ? accessToken : null });
+    const result = await createCodOrder({ items, customer: { ...customer, phone: address.phone }, address, accessToken: authUser?.id ? accessToken : null });
     return NextResponse.json({ ok:true, orderNumber:result.orderNumber, total:Number(result.total), paymentMethod:"COD" });
   } catch (err) {
     console.error("[checkout]", err);
