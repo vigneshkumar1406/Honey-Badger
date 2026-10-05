@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useCart } from "@/lib/cart-context";
@@ -25,6 +25,7 @@ export default function CheckoutPage() {
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState(null);
   const [pincodeLookup, setPincodeLookup] = useState({ loading: false, error: "", found: false, postOffice: "" });
+  const paymentFinalizing = useRef(false);
 
   const [customer, setCustomer] = useState({ name: "", email: "" });
   const [address, setAddress] = useState({
@@ -96,29 +97,76 @@ export default function CheckoutPage() {
         script.src = "https://checkout.razorpay.com/v1/checkout.js";
         script.async = true;
         script.onload = () => {
+          const finalizePayment = async (response) => {
+            if (paymentFinalizing.current) return;
+            paymentFinalizing.current = true;
+            try {
+              const verify = await fetch("/api/razorpay/verify", {
+                method:"POST",
+                headers:{"Content-Type":"application/json"},
+                body:JSON.stringify({
+                  ...response,
+                  items:items.map((i)=>({productId:i.productId,color:i.color,size:i.size,quantity:i.quantity})),
+                  customer,
+                  address
+                })
+              });
+              const result = await verify.json();
+              if (!result.ok) throw new Error(result.error || "Payment verification failed.");
+              rzp.close();
+              clearCart();
+              router.push(`/order-success/${result.orderNumber}`);
+            } catch (err) {
+              paymentFinalizing.current = false;
+              setFormError(err.message || "Payment verification failed. Please contact support before retrying.");
+              setSubmitting(false);
+            }
+          };
+
           const options = {
             key: data.razorpay.keyId,
             amount: data.razorpay.amount,
             currency: data.razorpay.currency,
             name: "Honey Badger Outfits",
-            description: "Online order",
+            description: `Order payment • ₹${Math.round(data.razorpay.amount / 100)}`,
+            notes: { store: "Honey Badger Outfits" },
             order_id: data.razorpay.orderId,
             prefill: { name: customer.name, email: customer.email, contact: address.phone },
-            theme: { color: "#f97316" },
+            theme: { color: "#f97316", backdrop_color: "#111111" },
             handler: async (response) => {
-              try {
-                const verify = await fetch("/api/razorpay/verify", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({ ...response, items:items.map((i)=>({productId:i.productId,color:i.color,size:i.size,quantity:i.quantity})), customer, address }) });
-                const result = await verify.json();
-                if (!result.ok) { setFormError(result.error || "Payment verification failed."); setSubmitting(false); return; }
-                clearCart();
-                router.push(`/order-success/${result.orderNumber}`);
-              } catch { setFormError("Payment verification failed. Please contact support before retrying."); setSubmitting(false); }
+              await finalizePayment(response);
             },
-            modal: { ondismiss: () => setSubmitting(false) }
+            modal: {
+              confirm_close: true,
+              animation: true,
+              ondismiss: () => {
+                if (!paymentFinalizing.current) setSubmitting(false);
+              }
+            }
           };
           const rzp = new window.Razorpay(options);
           rzp.on("payment.failed", () => { setFormError("Payment failed. You can retry or choose Cash on Delivery."); setSubmitting(false); });
+
+          let pollCount = 0;
+          const poll = async () => {
+            if (paymentFinalizing.current || pollCount++ >= 200) return;
+            try {
+              const statusRes = await fetch(`/api/razorpay/status?orderId=${encodeURIComponent(data.razorpay.orderId)}`, { cache: "no-store" });
+              const status = await statusRes.json();
+              if (status.ok && status.status === "paid" && status.paymentId) {
+                await finalizePayment({
+                  razorpay_order_id: data.razorpay.orderId,
+                  razorpay_payment_id: status.paymentId,
+                  razorpay_signature: ""
+                });
+                return;
+              }
+            } catch {}
+            window.setTimeout(poll, 3000);
+          };
+
           rzp.open();
+          window.setTimeout(poll, 3000);
         };
         script.onerror = () => { setFormError("Could not load Razorpay checkout."); setSubmitting(false); };
         document.body.appendChild(script);
