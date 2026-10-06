@@ -40,7 +40,9 @@ export default async function CategoryPage({ params, searchParams }) {
         {cat.tagline && <p className="text-neutral-500 mt-2">{cat.tagline}</p>}
       </div>
 
-      <CatalogToolbar count={products.length} currentSort={sort} />\n\n      {products.length === 0 ? (
+      <CatalogToolbar count={products.length} currentSort={sort} />
+
+      {products.length === 0 ? (
         <div className="py-24 text-center text-neutral-500">
           <p className="font-display text-2xl tracking-wide mb-2">COMING SOON</p>
           <p>New drops in this category are on the way.</p>
