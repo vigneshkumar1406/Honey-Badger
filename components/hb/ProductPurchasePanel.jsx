@@ -14,6 +14,7 @@ export default function ProductPurchasePanel({ product }) {
   const [qty, setQty] = useState(1);
   const [added, setAdded] = useState(false);
   const { addItem, toggleWishlist, wishlist } = useCart();
+  function changeColor(next) { setColor(next); setSize(null); window.dispatchEvent(new CustomEvent("hb-color-change", { detail: next })); }
   const router = useRouter();
 
   const discountPct = Math.round(((product.mrp - product.price) / product.mrp) * 100);
@@ -75,10 +76,7 @@ export default function ProductPurchasePanel({ product }) {
           {product.colors.map((c) => (
             <button
               key={c.name}
-              onClick={() => {
-                setColor(c.name);
-                setSize(null);
-              }}
+              onClick={() => changeColor(c.name)}
               title={c.name}
               className={`w-9 h-9 rounded-full ring-2 transition ${
                 color === c.name ? "ring-black" : "ring-transparent hover:ring-neutral-300"
