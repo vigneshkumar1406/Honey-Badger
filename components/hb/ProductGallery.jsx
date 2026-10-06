@@ -1,5 +1,5 @@
 "use client";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 
 export default function ProductGallery({product, colorImages={}}){
@@ -8,7 +8,8 @@ export default function ProductGallery({product, colorImages={}}){
  const [selected,setSelected]=useState(0);
  const base=product.images||[];
  const images=useMemo(()=>{const c=colorImages?.[color];return Array.isArray(c)&&c.length?c:base},[color,colorImages,base]);
- const chooseColor=(c)=>{setColor(c);setSelected(0)};
+ useEffect(()=>{const h=e=>{setColor(e.detail);setSelected(0)};window.addEventListener("hb-color-change",h);return()=>window.removeEventListener("hb-color-change",h)},[]);
+ const chooseColor=(c)=>{setColor(c);setSelected(0);window.dispatchEvent(new CustomEvent("hb-color-change",{detail:c}))};
  return <div className="space-y-3">
   <div className="relative aspect-[4/5] bg-neutral-100 overflow-hidden">
    {images[selected]&&<Image src={images[selected]} alt={product.name+" "+color} fill sizes="50vw" className="object-cover" priority/>}
