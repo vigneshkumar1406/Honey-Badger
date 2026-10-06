@@ -1,5 +1,5 @@
 /** @type {import('next').NextConfig} */
-const nextConfig = {
+const nextConfig = {\n  poweredByHeader: false,\n  compress: true,
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "images.unsplash.com" },
