@@ -31,11 +31,13 @@ export default async function ProductPage({ params }) {
     sku: product.sku,
     brand: { "@type": "Brand", name: "Honey Badger" },
     image: product.images,
-    aggregateRating: {
-      "@type": "AggregateRating",
-      ratingValue: product.rating,
-      reviewCount: product.reviewCount
-    },
+    ...(product.reviewCount > 0 ? {
+      aggregateRating: {
+        "@type": "AggregateRating",
+        ratingValue: product.rating,
+        reviewCount: product.reviewCount
+      }
+    } : {}),
     offers: {
       "@type": "Offer",
       priceCurrency: "INR",
