@@ -36,10 +36,7 @@ export default async function ShopPage({ searchParams }) {
         ))}
       </div>
 
-      <div className="flex items-center justify-between mb-6">
-        <div className="text-sm text-neutral-500">{products.length} products</div>
-        <SortSelect current={sort} />
-      </div>
+      <CatalogToolbar count={products.length} currentSort={sort} />
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
         {products.map((p) => (
