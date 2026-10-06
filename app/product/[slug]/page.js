@@ -22,6 +22,7 @@ export default async function ProductPage({ params }) {
   const product = await getProductBySlug(params.slug);
   if (!product) notFound();
 
+  const stock = Object.values(product.inventory || {}).reduce((sum, sizes) => sum + Object.values(sizes || {}).reduce((a, n) => a + Number(n || 0), 0), 0);
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Product",
@@ -39,7 +40,7 @@ export default async function ProductPage({ params }) {
       "@type": "Offer",
       priceCurrency: "INR",
       price: product.price,
-      availability: "https://schema.org/InStock"
+      availability: stock > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock"
     }
   };
 
