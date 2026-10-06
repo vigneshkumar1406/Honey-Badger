@@ -1,7 +1,8 @@
-import Image from "next/image";
 import { notFound } from "next/navigation";
 import { getAllProducts, getProductBySlug } from "@/lib/server/catalog";
 import ProductPurchasePanel from "@/components/hb/ProductPurchasePanel";
+import ProductGallery from "@/components/hb/ProductGallery";
+import ProductReviews from "@/components/hb/ProductReviews";
 
 export async function generateStaticParams() {
   return (await getAllProducts()).map((p) => ({ slug: p.slug }));
@@ -46,20 +47,7 @@ export default async function ProductPage({ params }) {
     <main className="max-w-[1400px] mx-auto px-6 py-10 pb-24 md:pb-10">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <div className="grid md:grid-cols-2 gap-10">
-        <div className="space-y-3">
-          <div className="relative aspect-[4/5] bg-neutral-100 overflow-hidden">
-            <Image src={product.images[0]} alt={product.name} fill sizes="50vw" className="object-cover" priority />
-          </div>
-          {product.images.length > 1 && (
-            <div className="grid grid-cols-3 gap-3">
-              {product.images.slice(1).map((img, i) => (
-                <div key={i} className="relative aspect-square bg-neutral-100 overflow-hidden">
-                  <Image src={img} alt="" fill sizes="16vw" className="object-cover" />
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+        <ProductGallery product={product} colorImages={product.colorImages} />
 
         <ProductPurchasePanel product={product} />
       </div>
@@ -90,6 +78,7 @@ export default async function ProductPage({ params }) {
           </table>
         </div>
       </div>
+      <ProductReviews productId={product.id} initialRating={product.rating} initialCount={product.reviewCount} />
     </main>
   );
 }
