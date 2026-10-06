@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, ShoppingBag, PackagePlus, RotateCcw, Settings, Store, X, Menu, ExternalLink } from "lucide-react";
+import { LayoutDashboard, ShoppingBag, PackagePlus, RotateCcw, Settings, Store, Star, Boxes, X, Menu, ExternalLink } from "lucide-react";
 import { useState } from "react";
 import LogoutButton from "@/components/hb/LogoutButton";
 
@@ -9,6 +9,8 @@ const nav = [
   { href: "/admin", label: "Overview", icon: LayoutDashboard },
   { href: "/admin/orders", label: "Orders", icon: ShoppingBag },
   { href: "/admin/products", label: "Products", icon: Store },
+  { href: "/admin/inventory", label: "Inventory", icon: Boxes },
+  { href: "/admin/reviews", label: "Reviews", icon: Star },
   { href: "/admin/returns", label: "Returns", icon: RotateCcw },
   { href: "/admin/settings", label: "Store settings", icon: Settings },
 ];
