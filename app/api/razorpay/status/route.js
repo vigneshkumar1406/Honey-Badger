@@ -8,8 +8,10 @@ async function razorpayGet(path) {
     cache: "no-store"
   });
   const data = await response.json();
-  if (!response.ok) if (response.status === 401) throw new Error("Razorpay server credentials are invalid or mismatched. Please contact the store administrator.");
-  throw new Error(data?.error?.description || "Unable to check Razorpay payment.");
+  if (!response.ok) {
+    if (response.status === 401) throw new Error("Razorpay server credentials are invalid or mismatched. Please contact the store administrator.");
+    throw new Error(data?.error?.description || "Unable to check Razorpay payment.");
+  }
   return data;
 }
 
