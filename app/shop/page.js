@@ -2,18 +2,20 @@ import Link from "next/link";
 import { getAllProducts } from "@/lib/server/catalog";
 import { getCategories } from "@/lib/server/catalog";
 import ProductCard from "@/components/hb/ProductCard";
-import SortSelect from "@/components/hb/SortSelect";
+import CatalogToolbar from "@/components/hb/CatalogToolbar";
 
 export const metadata = { title: "Shop All | Honey Badger" };
 
 export default async function ShopPage({ searchParams }) {
   const sort = searchParams?.sort || "featured";
+  const q = String(searchParams?.q || "").trim().toLowerCase();
   let products = await getAllProducts();
   const categories = await getCategories();
 
   if (sort === "price-asc") products = [...products].sort((a, b) => a.price - b.price);
   if (sort === "price-desc") products = [...products].sort((a, b) => b.price - a.price);
   if (sort === "rating") products = [...products].sort((a, b) => b.rating - a.rating);
+  if (q) products = products.filter(p => [p.name,p.description,p.category,...(p.tags||[])].join(" ").toLowerCase().includes(q));
 
   return (
     <main className="max-w-[1400px] mx-auto px-6 py-12">
