@@ -22,6 +22,7 @@ function productPayload(b) {
     sku: b.sku || null,
     brand: "Honey Badger Outfits",
     status: b.status || "draft",
+    color_images: b.colorImages || {},
     seo_title: b.seoTitle || null,
     seo_description: b.seoDescription || null,
     tags: Array.isArray(b.tags) ? b.tags : [],
