@@ -1,0 +1,13 @@
+-- Security and performance hardening for Honey Badger
+create index if not exists idx_addresses_user_id on public.addresses(user_id);
+create index if not exists idx_categories_parent_id on public.categories(parent_id);
+create index if not exists idx_order_items_product_id on public.order_items(product_id);
+create index if not exists idx_order_items_variant_id on public.order_items(variant_id);
+create index if not exists idx_pending_checkouts_auth_user_id on public.pending_checkouts(auth_user_id);
+create index if not exists idx_product_images_product_id on public.product_images(product_id);
+create index if not exists idx_product_reviews_user_id on public.product_reviews(user_id);
+create index if not exists idx_return_images_return_id on public.return_images(return_id);
+create index if not exists idx_return_requests_order_id on public.return_requests(order_id);
+revoke execute on function public.refresh_product_rating() from anon, authenticated;
+revoke execute on function public.handle_new_user() from anon, authenticated;
+revoke execute on function public.is_admin() from anon, authenticated;
