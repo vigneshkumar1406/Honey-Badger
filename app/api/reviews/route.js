@@ -24,6 +24,9 @@ export async function POST(req){
     const title=String(b.title||"").trim().slice(0,120);
     const body=String(b.body||"").trim().slice(0,2000);
     if(!productId || !Number.isInteger(rating) || rating<1 || rating>5 || !body) return NextResponse.json({ok:false,error:"Product, rating and review text are required."},{status:400});
+    const purchases=await supabaseRequest("/rest/v1/order_items?product_id=eq."+encodeURIComponent(productId)+"&select=order_id,orders!inner(user_id,status)&orders.user_id=eq."+encodeURIComponent(user.id),{accessToken:token});
+    const eligible=(purchases||[]).some(row=>!["cancelled","payment_failed","refunded"].includes(String(row.orders?.status||"")));
+    if(!eligible) return NextResponse.json({ok:false,error:"Reviews are available after you purchase this product."},{status:403});
     const existing=await supabaseRequest("/rest/v1/product_reviews?product_id=eq."+encodeURIComponent(productId)+"&user_id=eq."+encodeURIComponent(user.id)+"&select=id&limit=1",{accessToken:token});
     if(existing?.length) return NextResponse.json({ok:false,error:"You have already reviewed this product."},{status:409});
     const profiles=await supabaseRequest("/rest/v1/profiles?id=eq."+encodeURIComponent(user.id)+"&select=full_name,email&limit=1",{accessToken:token});
