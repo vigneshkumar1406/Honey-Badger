@@ -10,7 +10,7 @@ function payload(b) {
     short_description: b.shortDescription || null, description: b.description || null,
     material: b.material || null, fit: b.fit || null, price: Number(b.price),
     compare_at_price: b.mrp ? Number(b.mrp) : null, sku: b.sku || null,
-    status: b.status || "draft", seo_title: b.seoTitle || null,
+    status: b.status || "draft", color_images: b.colorImages || {}, seo_title: b.seoTitle || null,
     seo_description: b.seoDescription || null,
     tags: Array.isArray(b.tags) ? b.tags : [], features: Array.isArray(b.features) ? b.features : [],
     specs: b.specs || {},
