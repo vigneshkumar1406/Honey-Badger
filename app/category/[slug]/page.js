@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { getCategories } from "@/lib/server/catalog";
 import { getProductsByCategory, getAllProducts } from "@/lib/server/catalog";
 import ProductCard from "@/components/hb/ProductCard";
+import CatalogToolbar from "@/components/hb/CatalogToolbar";
 
 export async function generateStaticParams() {
   const categories = await getCategories();
@@ -14,16 +15,22 @@ export async function generateMetadata({ params }) {
   return { title: cat ? `${cat.name} | Honey Badger` : "Honey Badger" };
 }
 
-export default async function CategoryPage({ params }) {
+export default async function CategoryPage({ params, searchParams }) {
   const categories = await getCategories();
   const isSale = params.slug === "sale";
   const cat = isSale ? { name: "Sale", tagline: "Deepest discounts, while stock lasts" } : categories.find(c=>c.slug===params.slug);
 
   if (!cat) notFound();
 
-  const products = isSale
+  let products = isSale
     ? (await getAllProducts()).filter((p) => Math.round(((p.mrp - p.price) / p.mrp) * 100) >= 40)
     : await getProductsByCategory(params.slug);
+  const q=String(searchParams?.q||"").trim().toLowerCase();
+  const sort=searchParams?.sort||"featured";
+  if(q) products=products.filter(p=>[p.name,p.description,p.category,...(p.tags||[])].join(" ").toLowerCase().includes(q));
+  if(sort==="price-asc") products=[...products].sort((a,b)=>a.price-b.price);
+  if(sort==="price-desc") products=[...products].sort((a,b)=>b.price-a.price);
+  if(sort==="rating") products=[...products].sort((a,b)=>b.rating-a.rating);
 
   return (
     <main className="max-w-[1400px] mx-auto px-6 py-12">
@@ -33,7 +40,7 @@ export default async function CategoryPage({ params }) {
         {cat.tagline && <p className="text-neutral-500 mt-2">{cat.tagline}</p>}
       </div>
 
-      {products.length === 0 ? (
+      <CatalogToolbar count={products.length} currentSort={sort} />\n\n      {products.length === 0 ? (
         <div className="py-24 text-center text-neutral-500">
           <p className="font-display text-2xl tracking-wide mb-2">COMING SOON</p>
           <p>New drops in this category are on the way.</p>
