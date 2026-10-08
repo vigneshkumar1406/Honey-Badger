@@ -8,8 +8,8 @@ import AdminShell from "@/components/hb/AdminShell";
 export const dynamic = "force-dynamic";
 
 export default async function AdminProductsPage({ searchParams }) {
-  await requireAdmin().catch(e => { if (e.code === "AUTH_REQUIRED") redirect("/login"); redirect("/account"); });
-  const products = await getAllProducts({ includeHidden: true });
+  const { accessToken } = await requireAdmin().catch(e => { if (e.code === "AUTH_REQUIRED") redirect("/login"); redirect("/account"); });
+  const products = await getAllProducts({ includeHidden: true, accessToken });
   const categories = await getCategories();
   const edit = searchParams?.id ? products.find(p => p.id === searchParams.id) : null;
   const formOpen = Boolean(edit || searchParams?.new);
