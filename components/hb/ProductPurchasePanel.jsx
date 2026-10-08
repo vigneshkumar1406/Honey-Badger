@@ -167,10 +167,13 @@ export default function ProductPurchasePanel({ product }) {
           <ShieldCheck className="w-4 h-4 text-orange-500" /> Secure payment powered by Razorpay
         </div>
         <div className="text-xs text-neutral-400 mt-2">
-          Easy returns — if your order arrives damaged, we’re here to help. Please contact us within 48 hours of delivery.{" "}
-          <a href="/returns" className="underline">
-            Read policy
-          </a>
+          <div className="font-semibold text-neutral-700 mb-1">Easy Returns</div>
+          <div>
+            If your order arrives damaged, we’re here to help. Please contact us within 48 hours of delivery.{" "}
+            <a href="/returns" className="underline">
+              Read Policy
+            </a>
+          </div>
         </div>
       </div>
 
