@@ -63,11 +63,38 @@ export async function POST(req) {
       }
     }
 
+    // SKUs are also globally unique. Reuse is common during testing, so
+    // automatically choose the next available SKU instead of failing with
+    // PostgreSQL's products_sku_key constraint.
+    const baseSku = String(b.sku || "").trim().toUpperCase();
+    let sku = baseSku;
+    if (sku) {
+      const existing = await supabaseRequest(
+        `/rest/v1/products?sku=eq.${encodeURIComponent(baseSku)}&select=sku&limit=1`,
+        { accessToken }
+      );
+      if (existing?.length) {
+        let n = 2;
+        while (true) {
+          const candidate = `${baseSku}-${n}`;
+          const rows = await supabaseRequest(
+            `/rest/v1/products?sku=eq.${encodeURIComponent(candidate)}&select=sku&limit=1`,
+            { accessToken }
+          );
+          if (!rows?.length) {
+            sku = candidate;
+            break;
+          }
+          n += 1;
+        }
+      }
+    }
+
     const [p] = await supabaseRequest("/rest/v1/products", {
       method: "POST",
       accessToken,
       headers: { Prefer: "return=representation" },
-      body: productPayload(b, slug),
+      body: productPayload({ ...b, sku }, slug),
     });
 
     for (const v of b.variants || []) {
@@ -83,7 +110,7 @@ export async function POST(req) {
           color_hex: v.colorHex || null,
           sku:
             v.sku ||
-            `${b.sku}-${String(v.color).slice(0, 3).toUpperCase()}-${v.size}`,
+            `${sku}-${String(v.color).slice(0, 3).toUpperCase()}-${v.size}`,
           stock: Number(v.stock || 0),
           price_override: v.priceOverride ? Number(v.priceOverride) : null,
           is_active: true,
