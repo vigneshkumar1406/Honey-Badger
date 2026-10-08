@@ -11,8 +11,12 @@ export default async function AdminProductsPage({ searchParams }) {
   const { accessToken } = await requireAdmin().catch(e => { if (e.code === "AUTH_REQUIRED") redirect("/login"); redirect("/account"); });
   const products = await getAllProducts({ includeHidden: true, accessToken });
   const categories = await getCategories();
-  const edit = searchParams?.id ? products.find(p => p.id === searchParams.id) : null;
-  const formOpen = Boolean(edit || searchParams?.new);
+  // Normalize the query value so an Edit link always opens the selected
+  // catalogue item rather than falling back to the blank creation form.
+  const editId = Array.isArray(searchParams?.id) ? searchParams.id[0] : searchParams?.id;
+  const isNew = Array.isArray(searchParams?.new) ? searchParams.new[0] : searchParams?.new;
+  const edit = editId ? products.find(p => String(p.id) === String(editId)) : null;
+  const formOpen = Boolean(edit || (isNew && !editId));
 
   return <AdminShell title="Products">
     {!formOpen && <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
