@@ -7,11 +7,11 @@ function newId() {
   return randomBytes(13).toString("hex");
 }
 
-function productPayload(b) {
+function productPayload(b, slug = b.slug) {
   return {
     id: newId(),
     name: b.name,
-    slug: b.slug,
+    slug,
     category_id: b.categoryId || null,
     short_description: b.shortDescription || null,
     description: b.description || null,
@@ -36,11 +36,38 @@ export async function POST(req) {
     const { accessToken } = await requireAdmin();
     const b = await req.json();
 
+    // Slugs are globally unique. If an admin reuses an existing slug,
+    // automatically make a stable unique variant instead of returning a
+    // confusing PostgreSQL 23505 error.
+    const baseSlug = String(b.slug || "").trim().toLowerCase();
+    let slug = baseSlug;
+    if (slug) {
+      const existing = await supabaseRequest(
+        `/rest/v1/products?slug=eq.${encodeURIComponent(baseSlug)}&select=slug&limit=1`,
+        { accessToken }
+      );
+      if (existing?.length) {
+        let n = 2;
+        while (true) {
+          const candidate = `${baseSlug}-${n}`;
+          const rows = await supabaseRequest(
+            `/rest/v1/products?slug=eq.${encodeURIComponent(candidate)}&select=slug&limit=1`,
+            { accessToken }
+          );
+          if (!rows?.length) {
+            slug = candidate;
+            break;
+          }
+          n += 1;
+        }
+      }
+    }
+
     const [p] = await supabaseRequest("/rest/v1/products", {
       method: "POST",
       accessToken,
       headers: { Prefer: "return=representation" },
-      body: productPayload(b),
+      body: productPayload(b, slug),
     });
 
     for (const v of b.variants || []) {
