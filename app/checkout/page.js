@@ -28,6 +28,12 @@ export default function CheckoutPage() {
   const paymentFinalizing = useRef(false);
 
   const [customer, setCustomer] = useState({ name: "", email: "" });
+  const [savedAddresses, setSavedAddresses] = useState([]);
+  const [signedIn, setSignedIn] = useState(false);
+  const [selectedAddressId, setSelectedAddressId] = useState("");
+  const [showAddressForm, setShowAddressForm] = useState(true);
+  const [savingAddress, setSavingAddress] = useState(false);
+  const [addressMessage, setAddressMessage] = useState("");
   const [address, setAddress] = useState({
     fullName: "",
     phone: "",
@@ -216,8 +222,18 @@ export default function CheckoutPage() {
           </section>
 
           <section>
-            <h2 className="font-semibold text-sm uppercase tracking-widest mb-3">Delivery address</h2>
-            <div className="grid sm:grid-cols-2 gap-3">
+            <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
+              <h2 className="font-semibold text-sm uppercase tracking-widest">Delivery address</h2>
+              <button type="button" onClick={() => { setShowAddressForm(true); setSelectedAddressId(""); setAddressMessage(""); setAddress({ fullName: customer.name || "", phone: "", line1: "", line2: "", city: "", state: "Tamil Nadu", pincode: "" }); }} className="text-xs font-bold text-orange-600 underline">+ ADD NEW ADDRESS</button>
+            </div>
+            {savedAddresses.length > 0 && <div className="space-y-2 mb-4">
+              <label className="block text-xs font-semibold text-neutral-500">CHOOSE A SAVED ADDRESS</label>
+              {savedAddresses.map(a => <label key={a.id} className={`flex gap-3 border rounded-lg p-3 cursor-pointer ${String(selectedAddressId)===String(a.id)?"border-orange-500 ring-1 ring-orange-300":""}`}>
+                <input type="radio" name="saved-address" checked={String(selectedAddressId)===String(a.id)} onChange={() => chooseSavedAddress(a.id)} />
+                <span className="text-sm"><b>{a.full_name}</b>{a.is_default && <span className="ml-2 text-[10px] uppercase text-orange-600 font-bold">Default</span>}<br/>{a.line1}{a.line2 ? `, ${a.line2}` : ""}<br/>{a.city}, {a.state} {a.pincode}<br/>Mobile: {a.phone}</span>
+              </label>)}
+            </div>}
+            {showAddressForm && <div className="grid sm:grid-cols-2 gap-3">
               <input
                 required
                 placeholder="Recipient name"
@@ -307,6 +323,12 @@ export default function CheckoutPage() {
                 Location auto-filled from pincode{pincodeLookup.postOffice ? ` • ${pincodeLookup.postOffice}` : ""}.
               </div>
             )}
+            <div className="mt-3 flex flex-wrap items-center gap-3">
+              {showAddressForm && <button type="button" onClick={saveCurrentAddress} disabled={savingAddress} className="border px-4 py-2 text-xs font-bold rounded disabled:opacity-50">{savingAddress ? "SAVING ADDRESS..." : signedIn ? "SAVE ADDRESS TO ACCOUNT" : "SAVE ADDRESS"}</button>}
+              {addressMessage && <span className="text-xs text-neutral-500">{addressMessage}</span>}
+              {!signedIn && <span className="text-xs text-neutral-500">Log in to keep addresses saved to your account.</span>}
+            </div>
+            {!showAddressForm && <button type="button" className="mt-2 text-xs underline text-neutral-500" onClick={() => { setShowAddressForm(true); setSelectedAddressId(""); }}>Edit this address</button>}
           </section>
 
           <section>
