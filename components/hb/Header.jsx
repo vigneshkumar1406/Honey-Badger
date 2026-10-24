@@ -6,6 +6,7 @@ import { Menu, Search, User, Heart, ShoppingBag, X } from "lucide-react";
 import Image from "next/image";
 import { useCart } from "@/lib/cart-context";
 import { categories } from "@/lib/data/categories";
+import ThemeToggle from "@/components/hb/ThemeToggle";
 
 const NAV = categories.slice(0, 6).map((c) => ({ href: `/category/${c.slug}`, label: c.name }));
 
@@ -69,6 +70,7 @@ export default function Header() {
           </nav>
 
           <div className="ml-auto md:ml-0 flex items-center gap-1 md:gap-3">
+            <ThemeToggle compact />
             <Link href="/shop" className="p-2 hover:bg-neutral-100 rounded-full" aria-label="Search">
               <Search className="w-5 h-5" />
             </Link>
