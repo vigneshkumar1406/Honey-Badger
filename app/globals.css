@@ -34,3 +34,44 @@ body {
 .hb-card-img {
   transition: opacity 0.3s ease;
 }
+
+
+/* Customer-selectable dark theme. Scoped to the storefront document root. */
+html.dark body {
+  background: #111111 !important;
+  color: #f5f5f5 !important;
+}
+html.dark body main,
+html.dark body section,
+html.dark body article,
+html.dark body .bg-white,
+html.dark body .bg-white\/95,
+html.dark body .bg-neutral-50,
+html.dark body .bg-neutral-100 {
+  background-color: #171717 !important;
+  color: #f5f5f5;
+}
+html.dark body .border,
+html.dark body .border-b,
+html.dark body .border-t,
+html.dark body .border-neutral-200,
+html.dark body .divide-y > * {
+  border-color: #3f3f46 !important;
+}
+html.dark body input:not([type="radio"]):not([type="checkbox"]):not([type="color"]),
+html.dark body textarea,
+html.dark body select {
+  background-color: #262626 !important;
+  color: #f5f5f5 !important;
+  border-color: #525252 !important;
+}
+html.dark body .text-neutral-900,
+html.dark body .text-black { color: #f5f5f5 !important; }
+html.dark body .text-neutral-700,
+html.dark body .text-neutral-600,
+html.dark body .text-neutral-500,
+html.dark body .text-neutral-400 { color: #a3a3a3 !important; }
+html.dark body .hover\\:bg-neutral-100:hover { background-color: #262626 !important; }
+html.dark body .bg-black { background-color: #f97316 !important; color: #111111 !important; }
+html.dark body .text-white { color: #ffffff; }
+html.dark body footer { background-color: #090909; color: #f5f5f5; }
