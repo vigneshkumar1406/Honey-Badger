@@ -45,6 +45,66 @@ export default function CheckoutPage() {
   });
 
   useEffect(() => {
+    let active = true;
+    fetch("/api/addresses", { cache: "no-store" }).then(r => r.json()).then(data => {
+      if (!active || !data.ok) return;
+      setSignedIn(Boolean(data.signedIn));
+      if (data.customer) setCustomer(old => ({ name: old.name || data.customer.name || "", email: old.email || data.customer.email || "" }));
+      const list = data.addresses || [];
+      setSavedAddresses(list);
+      const preferred = list.find(a => a.is_default) || list[0];
+      if (preferred) {
+        setSelectedAddressId(preferred.id);
+        setShowAddressForm(false);
+        setAddress({ fullName: preferred.full_name || "", phone: preferred.phone || "", line1: preferred.line1 || "", line2: preferred.line2 || "", city: preferred.city || "", state: preferred.state || "Tamil Nadu", pincode: preferred.pincode || "" });
+      }
+    }).catch(() => {});
+    try {
+      const stored = JSON.parse(localStorage.getItem("hb-checkout-customer") || "null");
+      if (stored) setCustomer(old => ({ name: old.name || stored.name || "", email: old.email || stored.email || "" }));
+    } catch {}
+    return () => { active = false; };
+  }, []);
+
+  useEffect(() => {
+    try { localStorage.setItem("hb-checkout-customer", JSON.stringify(customer)); } catch {}
+  }, [customer]);
+
+  async function saveCurrentAddress() {
+    if (!signedIn) {
+      setAddressMessage("Log in to save addresses to your account. You can still use this address for this order.");
+      return;
+    }
+    setSavingAddress(true);
+    setAddressMessage("");
+    try {
+      const res = await fetch("/api/addresses", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(address) });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || "Could not save address.");
+      const listRes = await fetch("/api/addresses", { cache: "no-store" });
+      const listData = await listRes.json();
+      setSavedAddresses(listData.addresses || []);
+      setSelectedAddressId(data.address?.id || "");
+      setShowAddressForm(false);
+      setAddressMessage("Address saved to your account.");
+    } catch (e) {
+      setAddressMessage(e.message);
+    } finally {
+      setSavingAddress(false);
+    }
+  }
+
+  function chooseSavedAddress(id) {
+    setSelectedAddressId(id);
+    const a = savedAddresses.find(x => String(x.id) === String(id));
+    if (!a) return;
+    setAddress({ fullName: a.full_name || "", phone: a.phone || "", line1: a.line1 || "", line2: a.line2 || "", city: a.city || "", state: a.state || "Tamil Nadu", pincode: a.pincode || "" });
+    setPincodeLookup({ loading: false, error: "", found: false, postOffice: "" });
+    setShowAddressForm(false);
+    setAddressMessage("");
+  }
+
+  useEffect(() => {
     if (!hydrated) return;
     if (items.length === 0) return;
     const payload = { items: items.map((i) => ({ productId: i.productId, color: i.color, size: i.size, quantity: i.quantity })) };
