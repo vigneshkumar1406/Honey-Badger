@@ -3,7 +3,6 @@ import { CartProvider } from "@/lib/cart-context";
 import Header from "@/components/hb/Header";
 import Footer from "@/components/hb/Footer";
 import WhatsAppButton from "@/components/hb/WhatsAppButton";
-import ThemeToggle from "@/components/hb/ThemeToggle";
 
 export const metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"),
@@ -30,7 +29,6 @@ export default function RootLayout({ children }) {
       </head>
       <body className="antialiased bg-white text-neutral-900 transition-colors">
         <CartProvider>
-          <div className="hidden"><ThemeToggle /></div>
           <Header />
           {children}
           <Footer />
