@@ -317,7 +317,7 @@ export default function CheckoutPage() {
                   </option>
                 ))}
               </select>
-            </div>
+            </div>}
             {pincodeLookup.found && (
               <div className="mt-2 text-xs text-neutral-500">
                 Location auto-filled from pincode{pincodeLookup.postOffice ? ` • ${pincodeLookup.postOffice}` : ""}.
