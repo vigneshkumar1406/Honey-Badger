@@ -16,7 +16,7 @@ body {
 }
 
 .hb-text-gradient {
-  background: linear-gradient(90deg, #f97316, #fb923c);
+  background: linear-gradient(90deg, #2563eb, #60a5fa);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -72,6 +72,6 @@ html.dark body .text-neutral-600,
 html.dark body .text-neutral-500,
 html.dark body .text-neutral-400 { color: #a3a3a3 !important; }
 html.dark body .hover\\:bg-neutral-100:hover { background-color: #262626 !important; }
-html.dark body .bg-black { background-color: #f97316 !important; color: #111111 !important; }
+html.dark body .bg-black { background-color: #2563eb !important; color: #ffffff !important; }
 html.dark body .text-white { color: #ffffff; }
 html.dark body footer { background-color: #090909; color: #f5f5f5; }
